@@ -1,21 +1,22 @@
-# HBase Pseudo-Distributed Cluster with HDFS (Hadoop Pseudo-Distributed Mode)
+# HBase Pseudo-Distributed Cluster with HDFS
 
 ---
 
-## 1. Build the Hadoop Base Image
+## 1. Build the Hadoop + HBase Base Image
 
-First, we build a **base Hadoop image** used by all cluster nodes (NameNode and DataNode).
+First, we build a single **Docker image** that contains both Hadoop and HBase in pseudo-distributed mode.
 
 This image includes:
 
 * Java 11
 * Hadoop 3.3.6
-* Basic system dependencies
+* HBase (compatible version for Hadoop 3)
+* SSH + basic system utilities
 
-All commands are executed from `hbase-pseudo-distributed`:
+From the project root:
 
 ```bash
-docker build -t my-hadoop-base ./hadoop
+sudo docker build -t hadoop-hbase-cluster .
 ```
 
 ---
@@ -26,106 +27,83 @@ docker build -t my-hadoop-base ./hadoop
 sudo docker images
 ```
 
-Expected output:
+You should see your image listed:
 
 ```text
-IMAGE                     TAG       IMAGE ID       SIZE
-my-hadoop-base           latest    9359341f2409   ~2.2GB
+REPOSITORY              TAG       IMAGE ID       SIZE
+hadoop-hbase-cluster    latest    xxxxxxxx       xxxMB
 ```
 
 ---
 
-## 2. Start HDFS in Pseudo-Distributed Mode
+## 2. Run the Pseudo-Distributed Cluster
 
-We launch a **pseudo-distributed HDFS cluster** using Docker Compose.
-
-This cluster consists of:
-
-* 1 NameNode (metadata manager)
-* 1 DataNode (storage node; more can be added in `docker-compose.yml` depending on resources)
-
-Note:
-All nodes use the same base image (`my-hadoop-base`) but run different roles via entrypoints and configuration.
-
----
-
-### Start the cluster
+### Start the container
 
 ```bash
-sudo docker compose up -d
+docker run -d -p 9870:9870 -p 8088:8088 -p 16010:16010 hadoop-hbase-cluster
 ```
 
 ---
 
-### Check running containers
+### Check running container
 
 ```bash
 sudo docker ps
 ```
 
-Expected output:
+Example output:
 
 ```text
-CONTAINER ID   IMAGE                     NAME
-xxxx           hdfs_namenode            namenode
-xxxx           hdfs_datanode            datanode1
+CONTAINER ID   IMAGE                  STATUS   PORTS
+cc27bda19a49   hadoop-hbase-cluster   Up       9870, 8088, 16010
 ```
 
 ---
 
-## 3. Access HDFS Web Interfaces
-
-* NameNode UI:
-  [http://localhost:9870](http://localhost:9870)
-
-* HDFS RPC endpoint (used later by HBase):
-  hdfs://localhost:9000
-
----
-
-## 4. Why this is important
-
-This HDFS cluster will be used by HBase to:
-
-* Store region data (HFiles)
-* Provide distributed storage for tables
-
----
-
-## 5. Verify the hadoop cluster
-
-### Step 1: Enter NameNode
+### Enter the container
 
 ```bash
-docker exec -it namenode bash
+sudo docker exec -it <container_id> bash
 ```
 
-### Step 2: Check DataNodes
+Check Hadoop processes:
 
 ```bash
-hdfs dfsadmin -report
+jps
 ```
 
-Expected:
+Expected processes:
 
-```text
-Live datanodes (1):
-```
-
-This means:
-
-* NameNode is running
-* DataNode is connected
-* Cluster is working
+* NameNode
+* DataNode
+* SecondaryNameNode
+* ResourceManager
+* NodeManager
+* HMaster
+* HRegionServer
+* HQuorumPeer
 
 ---
 
-## 6. HBase pseudo-distributed (next step)
+## 3. Access Web Interfaces
 
-TODO:
+Once the cluster is running, you can access:
 
-* Install HBase in a container
-* Configure `hbase-site.xml`
-* Point HBase to HDFS (`hdfs://namenode:9000`)
-* Start HBase Master + RegionServer
-* Validate with HBase shell (`create`, `put`, `scan`)
+* Hadoop NameNode UI → [http://localhost:9870](http://localhost:9870)
+* YARN ResourceManager UI → [http://localhost:8088](http://localhost:8088)
+* HBase Master UI → [http://localhost:16010](http://localhost:16010)
+
+---
+
+## 4. Important Notes
+
+This pseudo-distributed setup uses:
+
+* A single Docker container
+* Local HDFS (not real multi-node hdfs cluster)
+* Embedded HBase running on top of Hadoop HDFS
+
+---
+
+- TO DO : FIX RPC in hbase shell : aucun commande ne marche car le master tombe a chaque fois !!
