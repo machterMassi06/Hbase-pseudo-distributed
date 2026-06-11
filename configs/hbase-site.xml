@@ -21,7 +21,11 @@
 
   <property>
     <name>hbase.zookeeper.quorum</name>
-    <value>localhost</value>
+    <value>127.0.0.1</value>
   </property>
+   <property>
+     <name>hbase.wal.provider</name>
+     <value>filesystem</value>
+   </property>
 
 </configuration>
