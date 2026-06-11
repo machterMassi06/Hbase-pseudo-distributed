@@ -103,7 +103,3 @@ This pseudo-distributed setup uses:
 * A single Docker container
 * Local HDFS (not real multi-node hdfs cluster)
 * Embedded HBase running on top of Hadoop HDFS
-
----
-
-- TO DO : FIX RPC in hbase shell : aucun commande ne marche car le master tombe a chaque fois !!

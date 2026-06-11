@@ -13,7 +13,7 @@ start-dfs.sh
 start-yarn.sh 
 
 echo "Starting Hbase ..."
-
+hbase-daemon.sh start zookeeper
 start-hbase.sh 
 
 echo "pseudo distributed cluster ready ."
