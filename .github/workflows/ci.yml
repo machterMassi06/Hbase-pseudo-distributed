@@ -1,0 +1,27 @@
+name: Build and Push Docker Image
+on: 
+    push:
+        branches:
+            - main
+            
+jobs: 
+    build: 
+        runs-on: ubuntu-latest 
+        steps:
+            - name: Checkout the code
+              uses: actions/checkout@v3
+              with: 
+                token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+                fetch-depth: 0
+
+            - name:  Build Docker Image
+              run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/hadoop-hbase-cluster:latest . 
+
+            - name: Scan Docker Image with Trivy
+              run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image ${{ secrets.DOCKERHUB_USERNAME }}/hadoop-hbase-cluster:latest
+            
+            - name: Log in to DockerHub
+              run: echo "${{ secrets.DOCKERHUB_TOKEN}}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin 
+            
+            - name: Push Docker image to DockerHub
+              run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hadoop-hbase-cluster:latest
