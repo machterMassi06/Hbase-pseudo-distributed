@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     vim \
-    python3 && \
+    python3 \
     maven && \
     rm -rf /var/lib/apt/lists/*
 
