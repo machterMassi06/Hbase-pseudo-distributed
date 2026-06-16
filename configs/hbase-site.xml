@@ -28,11 +28,6 @@
      <name>hbase.wal.provider</name>
      <value>filesystem</value>
    </property>
-   
-  <property>
-       <name>hbase.io.compress.lz4.codec</name>
-    <value>org.apache.hadoop.hbase.io.compress.lz4.Lz4Codec</value>
-  </property>
 
 
 </configuration>
