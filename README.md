@@ -103,8 +103,3 @@ This pseudo-distributed setup uses:
 * A single Docker container
 * Local HDFS (not real multi-node hdfs cluster)
 * Embedded HBase running on top of Hadoop HDFS
-
-
-# TODO 
-
-Add GitOps pipeline (Like CI ), to build, scan and push the image to my docker hub account in each push into main event 
