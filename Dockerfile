@@ -30,6 +30,11 @@ RUN wget https://archive.apache.org/dist/hbase/2.5.8/hbase-2.5.8-bin.tar.gz && \
     mv hbase-2.5.8 /usr/local/hbase && \
     rm hbase-2.5.8-bin.tar.gz
 
+# JMX exporter (Prometheus Java agent)
+RUN mkdir -p /usr/local/jmx && \
+    wget -O /usr/local/jmx/jmx_prometheus_javaagent.jar \
+    https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.20.0/jmx_prometheus_javaagent-0.20.0.jar
+
 # ENV
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV HADOOP_HOME=/usr/local/hadoop
@@ -42,6 +47,7 @@ RUN echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $HBASE_HOME/co
     echo "export HBASE_MANAGES_ZK=true" >> $HBASE_HOME/conf/hbase-env.sh
 COPY configs/ $HADOOP_HOME/etc/hadoop/
 COPY configs/ $HBASE_HOME/conf/
+COPY monitoring/jmx/ /usr/local/jmx/
 
 # scripts
 COPY start-all.sh /root/start-all.sh
@@ -54,5 +60,8 @@ RUN mkdir -p /root/hdfs/namenode && \
 
 # format HDFS
 RUN hdfs namenode -format
+
+EXPOSE 9404
+EXPOSE 9405
 
 CMD ["/bin/bash", "/root/start-all.sh"]

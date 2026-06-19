@@ -1,1 +1,0 @@
-export HBASE_OPTS="$HBASE_OPTS -Djava.net.preferIPv4Stack=true"
