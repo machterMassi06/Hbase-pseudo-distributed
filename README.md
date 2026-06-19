@@ -1,94 +1,123 @@
 # HBase Pseudo-Distributed Cluster with HDFS
 
----
+A Dockerized **Hadoop + HBase pseudo-distributed cluster** with integrated monitoring using **JMX Exporter**, **Prometheus**, and **Grafana**.
 
-## 1. Build the Hadoop + HBase Base Image
+# Architecture
 
-First, we build a single **Docker image** that contains both Hadoop and HBase in pseudo-distributed mode.
-
-This image includes:
+The Hadoop-HBase cluster Docker image (see [Dockerfile](./Dockerfile)) contains:
 
 * Java 11
 * Hadoop 3.3.6
-* HBase (compatible version for Hadoop 3)
-* SSH + basic system utilities
+* HBase 2.5.8 (compatible with Hadoop 3.3.x)
+* HDFS (pseudo-distributed mode)
+* YARN
+* SSH and basic system utilities
+* ZooKeeper (embedded HBase mode)
 
-From the project root:
+**CI**: In this repository, the GitHub Actions workflow automatically builds and pushes the **hadoop-hbase-cluster** Docker image to Docker Hub (`massmach/hadoop-hbase-cluster`) on every push to the `main` branch.
 
-```bash
-sudo docker build -t hadoop-hbase-cluster .
-```
+In addition to the **hadoop-hBase-cluster** image, the stack defined in [docker-compose.yml](./docker-compose.yml) includes:
 
----
+* Prometheus
+* Grafana
+* JMX Exporter
 
-### Verify the image
+**Monitoring Architecture**:
 
-```bash
-sudo docker images
-```
-
-You should see your image listed:
-
-```text
-REPOSITORY              TAG       IMAGE ID       SIZE
-hadoop-hbase-cluster    latest    xxxxxxxx       xxxMB
-```
-
----
-
-## 2. Run the Pseudo-Distributed Cluster
-
-### Start the container
-
-```bash
-docker run -d -p 9870:9870 -p 8088:8088 -p 16010:16010 hadoop-hbase-cluster
-```
-
----
-
-### Check running container
-
-```bash
-sudo docker ps
-```
-
-Example output:
+In this pseudo-distributed mode, HBase runs a single **HMaster** and a single **HRegionServer**. JMX Exporter exposes metrics from both services, which are then scraped by Prometheus and visualized in Grafana.
 
 ```text
-CONTAINER ID   IMAGE                  STATUS   PORTS
-cc27bda19a49   hadoop-hbase-cluster   Up       9870, 8088, 16010
+    HMaster     -------- 
+                        |
+                        --> JMX Exporter --> Prometheus --> Grafana (dashboard)
+                        |
+    HRegionServer-------
 ```
 
 ---
 
-### Enter the container
+# Setup  
+
+## Start the Stack
+
+Build and start all services:
 
 ```bash
-sudo docker exec -it <container_id> bash
+docker compose up -d 
 ```
 
-Check Hadoop processes:
+
+## Verify Containers
 
 ```bash
-jps
+docker compose ps
 ```
 
-Expected processes:
+Expected services:
 
-* NameNode
-* DataNode
-* SecondaryNameNode
-* ResourceManager
-* NodeManager
-* HMaster
-* HRegionServer
-* HQuorumPeer
+```text
+NAME                    STATUS
+hadoop-hbase-cluster    Up
+prometheus              Up
+grafana                 Up
+```
 
 ---
 
-## 3. Access Web Interfaces
+# Verify Hadoop Hbase Cluster
 
-Once the cluster is running, you can access:
+## Enter the Hadoop/HBase Container
+
+```bash
+docker exec -it hadoop-hbase-cluster bash
+```
+
+Check running Java processes:
+
+```bash
+jps 
+```
+
+Expected output:
+
+```text
+NameNode
+DataNode
+SecondaryNameNode
+ResourceManager
+NodeManager
+HMaster
+HRegionServer
+HQuorumPeer
+Jps
+```
+
+## Verify HBase 
+
+Open HBase shell:
+
+```bash
+hbase shell
+```
+
+Check cluster status:
+
+```ruby
+status 'detailed'
+```
+
+Expected:
+
+```text
+...
+1 live servers
+...
+0 dead servers
+```
+
+## Access Cluster Web Interfaces
+
+you can access:
 
 * Hadoop NameNode UI → [http://localhost:9870](http://localhost:9870)
 * YARN ResourceManager UI → [http://localhost:8088](http://localhost:8088)
@@ -96,10 +125,95 @@ Once the cluster is running, you can access:
 
 ---
 
-## 4. Important Notes
+# Monitoring
 
-This pseudo-distributed setup uses:
+## Verify JMX Exporter Endpoints
 
-* A single Docker container
-* Local HDFS (not real multi-node hdfs cluster)
-* Embedded HBase running on top of Hadoop HDFS
+HMaster metrics:
+
+```bash
+curl http://localhost:9405/metrics
+```
+
+RegionServer metrics:
+
+```bash
+curl http://localhost:9404/metrics
+```
+
+You should see Prometheus-formatted metrics.
+
+Example:
+
+```text
+jvm_memory_bytes_used
+hadoop_*
+hbase_*
+```
+
+
+## Prometheus
+
+To get acces to Prometheus, Open in your browser:
+
+```text
+http://localhost:9091
+```
+
+Useful queries:
+
+```promql
+up
+```
+
+
+## Grafana
+
+To acces Grafana , in your browser open:
+
+```text
+http://localhost:3001
+```
+
+Default credentials:
+
+```text
+Username: admin
+Password: admin
+```
+
+After this step, you can change the default password to your own.
+
+### Grafana Setup
+
+1. Go to [http://localhost:3001](http://localhost:3001/)
+2. Add data source → Prometheus
+3. URL of the source:
+
+```
+http://prometheus:9091
+```
+
+4. Import a Kafka dashboard (example **dahboard json file** in **monitoring/grafana/**)
+
+---
+
+# Stop the Stack
+
+If you want to stop all containers:
+
+```bash
+docker compose down
+```
+
+To Remove containers and all associed volumes:
+
+```bash
+docker compose down -v
+```
+
+--- 
+
+# TODO
+
+- Improve the hbase grafana dashboard in **monitoring/grafana/hbase-dashboard.json**
