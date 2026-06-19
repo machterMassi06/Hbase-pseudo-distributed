@@ -191,7 +191,7 @@ After this step, you can change the default password to your own.
 3. URL of the source:
 
 ```
-http://prometheus:9091
+http://prometheus:9090
 ```
 
 4. Import a Kafka dashboard (example **dahboard json file** in **monitoring/grafana/**)
