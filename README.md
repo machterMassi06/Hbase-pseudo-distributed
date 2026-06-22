@@ -132,13 +132,13 @@ you can access:
 HMaster metrics:
 
 ```bash
-curl http://localhost:9405/metrics
+curl http://localhost:9404/metrics
 ```
 
 RegionServer metrics:
 
 ```bash
-curl http://localhost:9404/metrics
+curl http://localhost:9405/metrics
 ```
 
 You should see Prometheus-formatted metrics.
