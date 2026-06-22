@@ -1,14 +1,21 @@
 startDelaySeconds: 0
 
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
 rules:
-  - pattern: 'Hadoop<service=HBase, name=RegionServer, sub=(.+)><>(.+)'
-    name: hbase_regionserver_$1_$2
 
-  - pattern: 'Hadoop<service=HBase, name=Master, sub=(.+)><>(.+)'
+  - pattern: 'Hadoop<service=HBase,name=Master,sub=([^,]+)><>([^:]+)'
     name: hbase_master_$1_$2
+    type: GAUGE
 
-  - pattern: 'Hadoop<service=HBase, name=(.+)><>(.+)'
-    name: hbase_$1_$2
+  - pattern: 'Hadoop<service=HBase,name=RegionServer,sub=([^,]+)><>([^:]+)'
+    name: hbase_regionserver_$1_$2
+    type: GAUGE
+
+  - pattern: 'Hadoop<service=HBase,name=([^,]+),sub=([^,]+)><>([^:]+)'
+    name: hbase_$1_$2_$3
+    type: GAUGE
 
   - pattern: 'java.lang<type=Memory><>(HeapMemoryUsage|NonHeapMemoryUsage)'
 
