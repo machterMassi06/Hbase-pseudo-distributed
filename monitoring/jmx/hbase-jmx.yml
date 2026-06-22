@@ -1,22 +1,23 @@
 startDelaySeconds: 0
-
 lowercaseOutputName: true
 lowercaseOutputLabelNames: true
 
 rules:
-
-  - pattern: 'Hadoop<service=HBase,name=Master,sub=([^,]+)><>([^:]+)'
+  - pattern: 'Hadoop<service=HBase, name=Master, sub=([^,]+)><>([^:]+)(_\d+)?'
     name: hbase_master_$1_$2
     type: GAUGE
 
-  - pattern: 'Hadoop<service=HBase,name=RegionServer,sub=([^,]+)><>([^:]+)'
+  - pattern: 'Hadoop<service=HBase, name=RegionServer, sub=([^,]+)><>([^:]+)(_\d+)?'
     name: hbase_regionserver_$1_$2
     type: GAUGE
 
-  - pattern: 'Hadoop<service=HBase,name=([^,]+),sub=([^,]+)><>([^:]+)'
+  - pattern: 'Hadoop<service=HBase, name=([^,]+), sub=([^,]+)><>([^:]+)(_\d+)?'
     name: hbase_$1_$2_$3
     type: GAUGE
 
   - pattern: 'java.lang<type=Memory><>(HeapMemoryUsage|NonHeapMemoryUsage)'
+    name: jvm_memory_$1
 
-  - pattern: 'java.lang<type=GarbageCollector,name=(.+)><>(CollectionCount|CollectionTime)'
+  - pattern: 'java.lang<type=GarbageCollector, name=(.+)><>(CollectionCount|CollectionTime)'
+    name: jvm_gc_$1_$2
+    type: COUNTER
