@@ -194,7 +194,18 @@ After this step, you can change the default password to your own.
 http://prometheus:9090
 ```
 
-4. Import a Kafka dashboard (example **dahboard json file** in **monitoring/grafana/**)
+
+**4. Import Kafka Dashboards**
+
+To import the Kafka dashboards, follow these steps:
+
+4.1. **Create a new folder** named `hbase-pseudo-distr-cluster-monitoring`.
+
+4.2. **Navigate into** the newly created folder.
+
+4.3. **Import the 3 dashboard JSON files** (`HBase Master`, `RegionServer`, and `JVM` available in in the **`monitoring/grafana/`** directory) **individually** into Grafana.This will create **3 separate dashboards** inside the `hbase-pseudo-distr-cluster-monitoring` folder.
+
+---
 
 ---
 
@@ -216,4 +227,4 @@ docker compose down -v
 
 # TODO
 
-- Improve the hbase grafana dashboard in **monitoring/grafana/hbase-dashboard.json**
+- Continue to improve the hbase grafana dashboard in **monitoring/grafana/***
