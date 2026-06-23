@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
 
   hadoop-hbase-cluster:
-    build: .
+    image: massmach/hadoop-hbase-cluster:latest
     container_name: hadoop-hbase-cluster
     ports:
       - "9870:9870"   # HDFS NameNode UI
