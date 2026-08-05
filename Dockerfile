@@ -25,10 +25,22 @@ RUN wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.6/hadoop-3.3.6
     rm hadoop-3.3.6.tar.gz
 
 # HBase 
-RUN wget https://archive.apache.org/dist/hbase/2.5.8/hbase-2.5.8-bin.tar.gz && \
-    tar -xzf hbase-2.5.8-bin.tar.gz && \
-    mv hbase-2.5.8 /usr/local/hbase && \
-    rm hbase-2.5.8-bin.tar.gz
+RUN wget https://archive.apache.org/dist/hbase/2.5.8/hbase-2.5.8-src.tar.gz && \
+    tar -xzf hbase-2.5.8-src.tar.gz && \
+    mv hbase-2.5.8 /usr/local/hbase-src && \
+    rm hbase-2.5.8-src.tar.gz
+
+WORKDIR /usr/local/hbase-src
+
+
+RUN mvn clean package \
+    -Dhadoop.profile=3.0 \
+    -Dhadoop.version=3.3.6 \
+    -DskipTests
+
+
+RUN mkdir /usr/local/hbase && \
+    cp -r hbase-assembly/target/hbase-2.5.8-bin/* /usr/local/hbase
 
 # JMX exporter (Prometheus Java agent)
 RUN mkdir -p /usr/local/jmx && \
